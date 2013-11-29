@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="Author" contect="awen"/ >
+	<script src="babe.js"></script>
+	<script src="babe.controller.list.js"></script>
+	<script src="babe.controller.change.js"></script>
+	<title>babe test</title>
+</head>
+<body>
+	<div id="test" >
+			<p>code:<span bb-bind="text:code"></span></p>
+			<p>code : <input type="text" bb-bind="value:code"></p>
+			<p>name :<span bb-bind="text:name"></span></p>
+			<p>age :<span bb-bind="text:age"></span></p>
+			<p>age :<input type="text" bb-bind="value:age"></p>
+			<p>msg:<input type="text"  bb-bind="value:msg"></p>
+			<p>msg:<span  bb-bind="html:msg"></span></p>
+			<select name="" id="" bb-bind='list:skills|change:selchange'>
+				<option value="{{$index+1}}">{{$value}}</option>
+			</select>
+			<select name="" id="" bb-bind="list:skillss">
+				<option value="{{$value}}">{{$index}}</option>
+			</select>
+			<div bb-with="others">
+				<h3 bb-bind="text:baby"></h3>
+				<select bb-bind="list:colors">
+					<option value="{{$index}}">{{$value}}</option>
+				</select>
+			</div>
+	</div>
+	<script>
+	// vm测试
+		var json = {
+			code:1,
+			name:'awen',
+			msg :{
+				'get' : function(){
+					// 可以通过relate来动态关联其他键值（监控1级元素） 
+					return '大家好！我是:{{name}},我今年{{age}}岁了！';
+				},
+				// 这里用户可以自己处理关联
+				'set' : function(v){
+					 var ss = v.match(/:([^:]*),.*年(\d+)岁/);
+					 if (ss.length>0) {
+					 	json.name=ss[1];
+					 	json.age=ss[2];
+					 }
+				}
+			},
+			age:30,
+			skills:['english','js','css3','html5','php','android'],
+			skillss:{'english':'low','js':'high','css3':'high','html5':'high','php':'midle','android':'low'},
+			others:{
+				colors:['red','blue','dark'],
+				baby :'zhangyuxin'
+			},
+			selchange : function(){
+				alert('i am selchange');
+			}
+		}
+		for (var i = 0; i < 10; i++) {
+			json.skills.push(i+1);
+		};
+		console.time('test');
+		babe.bind('test',json);
+		console.timeEnd('test');
+
+		//////////////////////////////////////////////////////
+	</script>
+</body>
+</html>
