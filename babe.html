@@ -5,8 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<meta name="Author" contect="awen"/ >
 	<script src="babe.js"></script>
+	<script src="babe.controller.comm.js"></script>
 	<script src="babe.controller.list.js"></script>
-	<script src="babe.controller.change.js"></script>
+	<script src="babe.controller.event.js"></script>
 	<title>babe test</title>
 </head>
 <body>
@@ -15,10 +16,10 @@
 			<p>code : <input type="text" bb-bind="value:code"></p>
 			<p>name :<span bb-bind="text:name"></span></p>
 			<p>age :<span bb-bind="text:age"></span></p>
-			<p>age :<input type="text" bb-bind="value:age"></p>
+			<p>age :<input type="text" bb-bind="value:age|event:keyup-check"><span bb-bind="text:agetip"></span></p>
 			<p>msg:<input type="text"  bb-bind="value:msg"></p>
 			<p>msg:<span  bb-bind="html:msg"></span></p>
-			<select name="" id="" bb-bind='list:skills|change:selchange'>
+			<select name="" id="" bb-bind='list:skills|event:change-selchange'>
 				<option value="{{$index+1}}">{{$value}}</option>
 			</select>
 			<select name="" id="" bb-bind="list:skillss">
@@ -59,6 +60,15 @@
 			},
 			selchange : function(){
 				alert('i am selchange');
+			},
+			// 比如检测
+			agetip:'*只能输入数字',
+			check:function(){
+				if (/^\d+$/.test(this.value)) {
+					json.agetip = '输入正确';
+				}else{
+					json.agetip = '请输入正确的数字';
+				}
 			}
 		}
 		for (var i = 0; i < 10; i++) {

@@ -9,7 +9,7 @@
  *	4 如果绑定数据后，用户想手动改变数据以刷新ui，直接修改绑定的json对象就行了.
  *		但值得注意的是，该操作如果是列表级别的绑定，那么列表会重绘，所以事件绑定最好是代理级别的，防止内存泄露.
  *		另外改变数据请用 = 号，其他方法的改变无法触发，例如[].push();
- *	5 用户可以通过addController接口定义自己的绑定器，使之有了无限的可能。
+ *	5 用户可以通过addController接口定义自己的绑定器，使之有了无限的可能。传入的绑定器方法的上下文是当前数据对象
  *  6 目前变化双工监控只支持1级,另外方法是不被监控的，因为没有考虑到绑定的方法还要改变的问题
  *  7 用户可以自定义数据的get和set，get按照模板来写，自动绑定关联，但是set的解析需要用户手动改变关联，因为内容格式变化太复杂，按照原来的模板无法正确解析
  */
@@ -117,6 +117,7 @@
 			id = paths[0],
 			key = paths[1],
 			scope = $(id),
+			vm = vms[id],
 			sel = '[' + cbb + '*=":' + key + '"]',
 			doms = scope.querySelectorAll(sel);
 		if (doms.length > 0) {
@@ -128,7 +129,7 @@
 						control = controls[c];
 					// logs('><><><>',d,control)
 					if (typeof control.datachange == 'function') {
-						control.datachange(d, value);
+						control.datachange.call(vm,d, key, value);
 					} else {
 						logs(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
 					}
@@ -141,7 +142,7 @@
 	function smessage(path, stype, v) {
 		// logs('message>>>>>>>>', arguments);
 		// v为空的话自动获取数据
-		if (typeof v=='undefined') {
+		if (typeof v == 'undefined') {
 			v = getDataByPath(path);
 		}
 		if (stype == 'datachange') {
@@ -182,7 +183,7 @@
 			// 用户自定义的get，set 那么需要重新
 			if (isobj && ('get' in val)) {
 				getter = function() {
-					var tpl, lkeys,linkvals = [];
+					var tpl, lkeys, linkvals = [];
 					if (!(key in linksTpl)) {
 						// 保存模板
 						tpl = val['get']();
@@ -207,7 +208,7 @@
 						// 限制比较多，内容格式变化太复杂，交给用户的set自己解析。
 						// tpl = tpl.replace(/'\+\((\w*)\)\+'/g,'(.*)');
 						// linksTplrev[key] =  new Function('value', 'return value.match(/' + tpl + '/g);');
-					}else{
+					} else {
 						lkeys = linkkeys[key] || [];
 					}
 					for (var i = 0, l = lkeys.length; i < l; i++) {
@@ -304,7 +305,8 @@
 		if (doms.length > 0) {
 			aproto.forEach.call(doms, function(d) {
 				var cs = resolveControl(d.getAttribute(cbb)),
-					path = getPathByDom(d);
+					path = getPathByDom(d),
+					vm = vms[id];
 				for (var c in cs) {
 					var key = cs[c],
 						value,
@@ -315,7 +317,7 @@
 					value = getDataByPath(path + '/' + key);
 					// logs('><><><>',d,control,value,path+'/'+key)
 					if (typeof control.datachange == 'function') {
-						control.datachange(d, value);
+						control.datachange.call(vm, d, key, value);
 					} else {
 						logs(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
 					}
@@ -323,39 +325,6 @@
 			});
 		}
 	}
-	/*************************** 注册基本控制器*********************/
-	['text', 'value', 'html'].forEach(function(c) {
-		controls[c] = {
-			control: c,
-			//数据发生变化
-			datachange: function(dom, v) {
-				switch (this.control) {
-					case 'text':
-					case 'html':
-						dom.innerHTML = v;
-						break;
-					case 'value':
-						dom.value = v;
-						break;
-				}
-			},
-			//ui发生变化
-			uichange: function(dom) {
-				var id = getScope(dom),
-					v = null;
-				switch (this.control) {
-					case 'text':
-					case 'html':
-						v = dom.innerHTML;
-						break;
-					case 'value':
-						v = dom.value;
-						break;
-				}
-				return v;
-			}
-		}
-	});
 	// 代理模式监控dom
 	monitorDOM();
 	// 对外提供命名空间
