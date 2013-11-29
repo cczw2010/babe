@@ -16,7 +16,7 @@
 			<p>code : <input type="text" bb-bind="value:code"></p>
 			<p>name :<span bb-bind="text:name"></span></p>
 			<p>age :<span bb-bind="text:age"></span></p>
-			<p>age :<input type="text" bb-bind="value:age|event:change-check"><span bb-bind="text:agetip"></span></p>
+			<p>age :<input type="text" bb-bind="value:age|event:keyup-check"><span bb-bind="text:agetip"></span></p>
 			<p>msg:<input type="text"  bb-bind="value:msg"></p>
 			<p>msg:<span  bb-bind="html:msg"></span></p>
 			<select name="" id="" bb-bind='list:skills|event:change-selchange'>
@@ -64,7 +64,6 @@
 			age:30,
 			agetip:'*只能输入数字',
 			check:function(){
-				console.log(json.age);
 				if (/^\d+$/.test(json.age)) {
 					json.agetip = '输入正确';
 				}else{

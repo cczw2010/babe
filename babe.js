@@ -129,7 +129,7 @@
 						control = controls[c];
 					// logs('><><><>',d,control)
 					if (typeof control.datachange == 'function') {
-						control.datachange.call(vm,d, key, value);
+						control.datachange.call(vm, d, key, value);
 					} else {
 						logs(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
 					}
@@ -264,7 +264,7 @@
 	// 统一event触发函数
 	function trigger(e) {
 		// logs(e.type, e.target);
-		var dom = e.target;
+		var dom = this;
 		// 检查监控对象是否符合要求
 		if (nodetypes.indexOf(dom.nodeName) < 0) {
 			return;
@@ -290,10 +290,11 @@
 		}
 	}
 	// 监控dom变化
-	function monitorDOM() {
+	// modify by awe n@2013-11-29 17:48:09 取消代理观察模式，因为优先级较低，经常影响实际数据
+	function monitorDOM(dom) {
 		// ['click', 'keyup', 'animationend', 'touchup'].forEach(function(k) {
 		['change', 'keyup'].forEach(function(k) {
-			document.addEventListener(k, trigger, false);
+			dom.addEventListener(k, trigger, false);
 		});
 	}
 	// 扫描dom,刷新数据，生成内部标签标示（例如:bb-with），生成监控
@@ -307,26 +308,30 @@
 				var cs = resolveControl(d.getAttribute(cbb)),
 					path = getPathByDom(d),
 					vm = vms[id];
+				// 事件绑定
+				if (nodetypes.indexOf(d.nodeName) >= 0) {
+					monitorDOM(d);
+				}
 				for (var c in cs) {
 					var key = cs[c],
 						value,
 						control = controls[c];
-					//监控相应对象
-					monitorVM(id, path, key);
-					// value要在monitorVM处理之后在赋值，因为monitorVM可能会改变数据结构（用户自定义get，set）
-					value = getDataByPath(path + '/' + key);
-					// logs('><><><>',d,control,value,path+'/'+key)
-					if (typeof control.datachange == 'function') {
-						control.datachange.call(vm, d, key, value);
-					} else {
-						logs(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
+					if (control) {
+						//监控相应对象
+						monitorVM(id, path, key);
+						// value要在monitorVM处理之后在赋值，因为monitorVM可能会改变数据结构（用户自定义get，set）
+						value = getDataByPath(path + '/' + key);
+						// logs('><><><>',d,control,value,path+'/'+key)
+						if (typeof control.datachange == 'function') {
+							control.datachange.call(vm, d, key, value);
+						} else {
+							logs(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
+						}
 					}
 				}
 			});
 		}
 	}
-	// 代理模式监控dom
-	monitorDOM();
 	// 对外提供命名空间
 	O.babe = {
 		// 定义一个vm并解析相应的dom，完成双向绑定,fn会获取到vm虚拟对象，并对其填充值
