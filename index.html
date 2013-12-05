@@ -98,31 +98,27 @@
 			<li>消息：<input bb-bind="value:msg" size=50/></li>
 		</ul>
 	</div>
+
 	<h4>demo8：form验证</h4>
 	<div id="demo8" class="demo">
 		<div>姓名:<span bb-bind="text:name"></span></div>
 		<div>年龄:<input bb-bind="value:age|event:keyup=check" /><span bb-bind="text:tips"></span></div>
 	</div>
-	<!-- <h4>demo9：多tabs关联</h4>
+	<h4>demo9：bb-link关联绑定使用</h4>
 	<div id="demo9" class="demo">
 		<ul>
 			<li>型号：
-				<span bb-bind="list:xinghao">
+				<span bb-bind="list:xinghao|event:click=selchange(xinghao)">
 					<input name="xinhao" type="radio" value="{{$index}}"><span>{{$value}}</span>
 				</span>
 			</li>
 			<li>颜色：
-				<span bb-bind="list:selyanse">
-					<input name="yanse" type="radio" value="{{$value}}"><span>{{$value}}</span>
-				</span>
-			</li>
-			<li>套餐：
-				<span bb-bind="list:seltaocan">
-					<input name="taocan" type="radio" value="{{$index}}"><span>{{$value}}</span>
+				<span bb-link="selxinghao" bb-bind="list:selyanse">
+					<input name="yanse" type="radio" value="{{$index}}"><span>{{$value}}</span>
 				</span>
 			</li>
 		</ul>
-	</div> -->
+	</div>
 	<script>
 		// 开启实时监控
 		babe.listenintime(true);
@@ -182,28 +178,30 @@
 		}};
 		babe.bind('demo8',data8);
 		// demo9
-		// var data9 = {
-		// 	xinghao:[['大','中'],
-		// 					['大','中','小'],
-		// 					['小']],
-		// 	yanse:[{'red':'红','blue':'蓝','dark':'黑'},
-		// 				 {'pink':'粉','white':'白','blue':'蓝'},
-		// 				 {'blue':'蓝','pink':'粉'}
-		// 				 ],
-		// 	taocan:[['官方标配'],
-		// 					['官方标配','套餐1','套餐2','套餐3'],
-		// 					['套餐1','套餐3']],
-		// 	selxinhao:function(){
-				
-		// 	},
-		// 	selyanse:function(){
-
-		// 	},
-		// 	seltaocan:function(){
-
-		// 	},
-		// };
-		// babe.bind('demo9',data9);
+		var data9 = {
+			xinghao:['大','中','小'],
+			yanse:[{'red':'红','blue':'蓝','dark':'黑'},
+						 {'pink':'粉','white':'白','blue':'蓝'},
+						 {'blue':'蓝','pink':'粉'}
+						 ],
+			selxinghao:0,
+			selyanse: {
+				get :function(){
+					return data9.yanse[data9.selxinghao]
+				}
+			},
+			selchange:function(e,k){
+				var dom = e.target;
+				switch(k){
+					case 'xinghao':
+						if (dom.checked) {
+							data9.selxinghao=parseInt(dom.value);
+						};
+					break;
+				}
+			}
+		};
+		babe.bind('demo9',data9);
 
 
 	</script>

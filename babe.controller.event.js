@@ -10,7 +10,7 @@
 			if (!c || c.length<2) {
 				return;
 			}
-			// v1.1.1 解析函数的参数
+			// v1.2 解析函数的参数
 			et = c[0];
 			c = c[1].replace(/\s/g,'').replace(/\)/,''); //去空格并转化成：fname(param1,param2
 			c = c.split('(');
@@ -33,15 +33,18 @@
 		uichange: function(dom) {},
 		// 当数据发生变化时候的处理
 		// dom,绑定的dom；c绑定的控制器，value实际的绑定值,注意重复绑定的问题
-		// v1.1中时间回调除了event还会将自定义的参数传回
+		// v1.1中时间回调除了event还会将自定义的参数传回,
+		// v1.2 解决了回调参数叠加的bug
 		datachange: function(dom, c,value) {
 			// console.log(c,value);
 			var _c = splitc(c),
 				param = _c['param'];
 			if (typeof value == 'function') {
 				dom.addEventListener(_c['et'], function(e){
-					param.unshift(e);
-					value.apply(this,param);
+					var _param  = babe.clone(param);
+					// console.log(_param);
+					_param.unshift(e);
+					value.apply(this,_param);
 				}, false);
 			}
 		}

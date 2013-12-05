@@ -32,8 +32,10 @@
 		listenInTime = false,//是否监控keyup
 		bscopekey = 'bb-scope', //dom上存放id的属性
 		bwithkey = 'bb-with', //dom上绑定对象改变数据上下文的属性
+		blinkkey = 'bb-link', //dom上绑定对象关联key，可以关联多个用|割开
 		bpathkey = 'bb-path', //dom上标示键值完整路径的属性
 		bpathsign = '.', //path之间的连接符，
+		bckey = '|',//多绑定器是之间的间隔符
 		// bbidkey = 'bb-id',//dom上标示该绑定dom对应babe的为id，暂时注销，目前使用的path
 		// bbidx = 0,	//计数器
 		cbb = 'bb-bind', //统一绑定控制器属性
@@ -60,7 +62,7 @@
 		if (typeof obj != 'object' || obj == null) {
 			return obj;
 		}
-		var newObj = {};
+		var newObj = Array.isArray(obj)?[]:{};
 		for (var i in obj) {
 			newObj[i] = clone(obj[i]);
 		}
@@ -113,7 +115,7 @@
 	}
 	// 解析绑定器值，可能绑定是多个,reversion是否反转control和key
 	function resolveControl(key, reversion) {
-		var cs = key.split('|'),
+		var cs = key.split(bckey),
 			ret = {};
 		for (var i = 0, l = cs.length; i < l; i++) {
 			var c = cs[i].split(':');
@@ -186,11 +188,29 @@
 		}
 		return id + tmp;
 	}
+	// 增加键值和键值之间的关联,即当patha变化时也要通知pathb刷新数据,path是带key和id的完整路径
+	function addlink(patha,pathb){
+		if (!(patha in linkkeys)) {
+			linkkeys[patha] = [];
+			//v1.2如果还没有监听，同样也需要监听一下，因为link绑定器绑定的数据如果没有通过bind绑定过，也是不监听的
+			// 查分patha
+			var paths = patha.split(bpathsign),
+				id = paths[0],
+				key = paths.pop();
+
+			paths = paths.join(bpathsign);
+			monitorVM(id, paths, key);
+		}
+		// v1.1 防止多次绑定
+		if (linkkeys[patha].indexOf(pathb)<0) {
+			linkkeys[patha].push(pathb);
+		}
+	}
 	// 根据vm数据对象生成vm监控对象，监控数据变化
 	// id 上下文id，key要监控的键值
 	// modify by awen @ 2013-11-28 14:09:50 增加用户自定义get和set支持
 	// v1.1 中vm要多层，vmskeys中的key将变成id/path/key 这样才能监控多级
-	function monitorVM(id, path, key) {
+	function monitorVM(id, path, key,links) {
 		var pathkey = path + bpathsign + key,
 			obj = getDataByPath(path), //v1.1 取得实际key对应的数据对象
 			vm = getDataByPath(path, true), //v1.1 取得实际key对应的vm对象
@@ -211,26 +231,18 @@
 					// 保存模板
 					// v1.1将模板中的this更换为实际的scopeid，并且只保存反向关联。正向关联应该由用户实现
 					if (!tpl) {return;}
-					// v1.1.1tpl可能返回的是数据(直接返回)，也可能返回的是模板
+					// v1.2tpl可能返回的是数据(直接返回)，也可能返回的是模板
 					if (typeof tpl == 'object') {
 							return tpl;
 					}else{
 						if (!(key in linksTpl)) {
 								linksTpl[pathkey] = tpl.replace(/\{\{this/g,'{{'+id);
-								// 正反存两份
+
 								lkeys = linksTpl[pathkey].match(/[.\w]+(?=\}\})/g); //获取所有的关联键数组
+								// console.log(lkeys,pathkey);
 								for (var i = 0, l = lkeys.length; i < l; i++) {
 									var lkey = lkeys[i];
-									if (!(lkey in linkkeys)) {
-										linkkeys[lkey] = [];
-									}
-									// v1.1 防止多次绑定
-									if (linkkeys[lkey].indexOf(pathkey)<0) {
-										linkkeys[lkey].push(pathkey);
-									}
-									// console.log(pathkey,lkeys);
-									// v1.1 中只保存反向关联
-									// linkkeys[pathkey] = lkeys;
+									addlink(lkey,pathkey);
 								}
 						} else {
 							lkeys = linkkeys[pathkey] || [];
@@ -281,7 +293,7 @@
 			};
 			// console.log(key,path,obj,data);
 			Object.defineProperty(vm, key, {
-				enumerable: true,
+				// enumerable: true,
 				get: getter,
 				set: setter
 			});
@@ -316,6 +328,17 @@
 			}
 		}
 	}
+	// 解析dom上的link绑定器绑定,返回不带id的完整的路径
+	function resolveLink(d){
+		var links = [];
+		if (d.hasAttribute(blinkkey)) {
+				var slink = d.getAttribute(blinkkey);
+				if (slink) {
+					links = slink.split(bckey);
+				}
+			}
+		return links;
+	}
 	// 监控dom变化
 	// modify by awen@2013-11-29 17:48:09 取消代理观察模式，因为优先级较低，经常影响实际数据
 	function monitorDOM(dom) {
@@ -333,10 +356,13 @@
 			doms = scope.querySelectorAll(sel);
 		if (doms.length > 0) {
 			aproto.forEach.call(doms, function(d) {
-				var cs, path, vm;
+				var cs, path, vm,links;
 				// v1.1 为每个dom增加scopeid属性，这样就不用去遍历了,path中包含了id
 				d.setAttribute(bscopekey, id);
 				path = getPathByDom(d);
+				// v1.2 增加key关联绑定器判断
+				links = resolveLink(d);
+
 				cs = resolveControl(d.getAttribute(cbb));
 				vm = vms[id];
 				// console.log(path,cs);
@@ -350,10 +376,19 @@
 						control = controls[c];
 					if (control) {
 						// v1.1 获取实际的key
-						var realkey = control.resolve?control.resolve(key):'';
+						var realkey = control.resolve?control.resolve(key):'',pathkey;
 						realkey = realkey?realkey:key;
 						//监控相应对象
 						monitorVM(id, path, realkey);
+
+						// v1.2 添加links，这里过滤掉了event，防止事件重复绑定，等event控制器解决重复绑定后，早打开限制
+						if (c!='event') {
+							pathkey = id+bpathsign+realkey;
+							for (var i = 0,l = links.length; i < l; i++) {
+								// console.log(id+bpathsign+links[i],pathkey);
+								addlink(id+bpathsign+links[i],pathkey);
+							}
+						}
 						// console.log(id, path, key, realkey);
 						// value要在monitorVM处理之后在赋值，因为monitorVM可能会改变数据结构（用户自定义get，set）
 						value = getDataByPath(path + bpathsign + realkey, true);
@@ -366,10 +401,12 @@
 					}
 				}
 			});
-		}
+		}		
 	}
 	// 对外提供命名空间
 	O.babe = {
+		// 克隆数据
+		clone : clone,
 		// 是否开启输入时实时监控刷新（keyup）
 		// 注意该方法是运行时的，不是全局监控的，默认是false
 		listenintime : function(intime){
