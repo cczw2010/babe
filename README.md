@@ -2,7 +2,7 @@ babe v1.0 build by awen @2013-11-25
 
 一个简单的（mv）viewmodle框架,babe is for my babe;
 
-1 消息路径：scope/key
+1 消息路径：scope/path/key
 
 2 绑定属性统一为：bb-bind 通过值来判断例如：bb-bind=click:callback  //分号前后位控制器，和绑定值
 
@@ -23,3 +23,15 @@ babe v1.0 build by awen @2013-11-25
 6 目前变化双工监控只支持1级,另外方法是不被监控的，因为没有考虑到绑定的方法还要改变的问题
 
  7 用户可以自定义数据的get和set，get按照模板来写，自动绑定关联，但是set的解析需要用户手动改变关联，因为内容格式变化太复杂，按照原来的模板无法正确解析
+
+v1.1 修改
+
+ 1 clone对象以前使用JSON来生成，优点高效，简单，但是不能格式化function，改为递归
+
+ 2 将scopeid绑定到每个内部需要监控的dom上，这样获取的时候不再需要遍历
+
+ 3 将数据的实际pathkey绑定到dom上，方便多级定位
+
+ 4 vmskeys 使用path作为key，而不是只监控第一级key
+
+ 5 开始实现多级数据双工监控
