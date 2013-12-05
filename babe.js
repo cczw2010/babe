@@ -18,6 +18,7 @@
  *	3 将数据的实际pathkey绑定到dom上，方便多级定位
  *	4 vmskeys 使用path作为key，而不是只监控第一级key
  *	5 开始实现多级数据双工监控
+ *	6 用户自定义的get中支持直接返回的是数据对象
  */
 ! function(O) {
 	// 一些常量
@@ -205,42 +206,48 @@
 			if (isobj && ('get' in val)) {
 				getter = function() {
 					// return val['get'].call(obj);
-					var lkeys, trueval, linkvals = {};
-					if (!(key in linksTpl)) {
-						// 保存模板
-						var tpl = val['get']();
-						// v1.1将模板中的this更换为实际的scopeid，并且只保存反向关联。正向关联应该由用户实现
-						linksTpl[pathkey] = tpl.replace(/\{\{this/g,'{{'+id);
-						// 正反存两份
-						lkeys = linksTpl[pathkey].match(/[.\w]+(?=\}\})/g); //获取所有的关联键数组
+					var lkeys, trueval, linkvals = {},
+							tpl = val['get']();
+					// 保存模板
+					// v1.1将模板中的this更换为实际的scopeid，并且只保存反向关联。正向关联应该由用户实现
+					if (!tpl) {return;}
+					// v1.1.1tpl可能返回的是数据(直接返回)，也可能返回的是模板
+					if (typeof tpl == 'object') {
+							return tpl;
+					}else{
+						if (!(key in linksTpl)) {
+								linksTpl[pathkey] = tpl.replace(/\{\{this/g,'{{'+id);
+								// 正反存两份
+								lkeys = linksTpl[pathkey].match(/[.\w]+(?=\}\})/g); //获取所有的关联键数组
+								for (var i = 0, l = lkeys.length; i < l; i++) {
+									var lkey = lkeys[i];
+									if (!(lkey in linkkeys)) {
+										linkkeys[lkey] = [];
+									}
+									// v1.1 防止多次绑定
+									if (linkkeys[lkey].indexOf(pathkey)<0) {
+										linkkeys[lkey].push(pathkey);
+									}
+									// console.log(pathkey,lkeys);
+									// v1.1 中只保存反向关联
+									// linkkeys[pathkey] = lkeys;
+								}
+						} else {
+							lkeys = linkkeys[pathkey] || [];
+						}
 						for (var i = 0, l = lkeys.length; i < l; i++) {
 							var lkey = lkeys[i];
-							if (!(lkey in linkkeys)) {
-								linkkeys[lkey] = [];
-							}
-							// v1.1 防止多次绑定
-							if (linkkeys[lkey].indexOf(pathkey)<0) {
-								linkkeys[lkey].push(pathkey);
-							}
+							lval = getDataByPath(lkey);
+							// console.log(lkey,lval);
+							linkvals[lkey] = lval;
 						}
-						// console.log(pathkey,lkeys);
-						// v1.1 中只保存反向关联
-						// linkkeys[pathkey] = lkeys;
-					} else {
-						lkeys = linkkeys[pathkey] || [];
+						// 替换数据
+						trueval = linksTpl[pathkey].replace(/\{\{([^\}\{]+)\}\}/g, function($1,$2) {
+							return linkvals[$2];
+						});
+						// console.log(lkeys, linksTpl[pathkey], linkvals);
+						return obj[key] = trueval;
 					}
-					for (var i = 0, l = lkeys.length; i < l; i++) {
-						var lkey = lkeys[i];
-						lval = getDataByPath(lkey);
-						// console.log(lkey,lval);
-						linkvals[lkey] = lval;
-					}
-					// 替换数据
-					trueval = linksTpl[pathkey].replace(/\{\{([^\}\{]+)\}\}/g, function($1,$2) {
-						return linkvals[$2];
-					});
-					// console.log(lkeys, linksTpl[pathkey], linkvals);
-					return obj[key] = trueval;
 				};
 			} else {
 				getter = function() {
