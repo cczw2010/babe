@@ -279,17 +279,17 @@
 					usersetfn && usersetfn(v);
 					// 改变数据发布消息,第三个参数表示是js数据发生变化
 					smessage(path, key, 'datachange', v);
-					// 处理关联当前key的key，改变关联的自定义set和get的key值
+					// 处理关联当前key的key，改变关联的自定义set和get的key值,
+					// v1.1 ！值得注意的是当数据覆盖bind时不会重写用户自定义的get和set。如果需要重写的话，那么需要重构setter方法和getter方法以及保存的getter模板
 					if (pathkey in linkkeys) {
 						var lkeys = linkkeys[pathkey];
 						for (var i = 0, l = lkeys.length; i < l; i++) {
 							var lpath = lkeys[i],
 								lpaths = splitPath(lpath);
 							lkey = lpaths.pop(),
-							lval = getDataByPath(lpath,true), // 防止关联的带有用户自定义的get，所以这里最好是自己获取val
 							lpath = lpaths.join(bpathsign);
 							// console.log("links~~~~~~~~~~~~~",lpath,lkey,lval);
-							smessage(lpath, lkey, 'datachange',lval);
+							smessage(lpath, lkey, 'datachange');
 						}
 					}
 					// 处理被当前key关联的key，绕吧？自定义get和set的key改变的时候，触发关联的key改变
