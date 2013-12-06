@@ -4,9 +4,9 @@ babe v1.0 build by awen @2013-11-25
 
 1 消息路径：scope/path/key
 
-2 绑定属性统一为：bb-bind 通过值来判断例如：bb-bind=click:callback  //分号前后位控制器，和绑定值
+2 绑定属性统一为：bb-bind 通过值来判断例如：bb-bind=value:name  //分号前后分别为控制器和绑定值
 
-  如果要绑定多个绑定器，请用|分开，例如：bb-bind=list:colors|change:callback
+  如果要绑定多个绑定器，请用|分开，例如：bb-bind=list:colors|event:change=callback
   
   bb-with 代表当前绑定的键值是一个对象，更新其内部的作用域为当前键值
   
