@@ -136,24 +136,29 @@
 			scope = $(id),
 			vm = vms[id],
 			// v1.1 检索时增加bb-path判断，防止不同path同名key数据污染
-			sel = '[' + cbb + '*=":' + key + '"][' + bpathkey + '="' + path + '"]',
+			// sel = '[' + cbb + '*=":' + key + '"][' + bpathkey + '="' + path + '"]',
+			sel = '[' + cbb + '*="' + key + '"][' + bpathkey + '="' + path + '"]',
 			doms = scope.querySelectorAll(sel);
-		// console.log(path,key,value,sel,doms);
 		if (doms.length > 0) {
 			aproto.forEach.call(doms, function(d) {
-				var cs = resolveControl(d.getAttribute(cbb), true);
-				// console.log(key,'<<<<<<<<<<<<<<<<<<<<<<<<<');
-				if (key in cs) {
-					var c = cs[key],
-						control = controls[c];
-					// console.log('><><><>',d,control,value)
-					if (typeof control.datachange == 'function') {
-						control.datachange.call(vm, d, key, value);
-					} else {
-						console.log(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
+				// v1.2 不是所有的控制器都是简单:分割开，有可能需要自己解析，所以还是遍历吧，另外上面的sel选择器就不准了，需要在正则验证一下
+				var bindkey = d.getAttribute(cbb),cs,
+					 reg = new RegExp('('+key+'\\||'+key+'\\s*$)');
+				if (reg.test(bindkey)) {
+					cs = resolveControl(bindkey);
+					for (var c in cs) {
+						var  ckey= cs[c],control = controls[c],
+								_key = control.resolve ? control.resolve(ckey) : ckey;
+						if (_key == key) {
+							if (typeof control.datachange == 'function') {
+								control.datachange.call(vm, d, ckey, value);
+							} else {
+								console.log(c + '>>>>%c控制器注册方法错误，没有遵循{updatedata：fn,datachange:fn}格式', 'color:red');
+							}
+							return false;
+						}
 					}
 				}
-
 			});
 		}
 	}
@@ -273,7 +278,6 @@
 			var usersetfn = isobj && ('set' in val) ? val['set'] : null;
 			setter = function(v) {
 				var oldv = obj[key];
-				// console.log('>>>>>>>>>>>>>>setter:'+key,oldv, v);
 				if (oldv != v) {
 					obj[key] = v;
 					usersetfn && usersetfn(v);
@@ -389,14 +393,15 @@
 						//监控相应对象
 						monitorVM(id, path, realkey);
 
-						// v1.2 添加links，这里过滤掉了event，防止事件重复绑定，等event控制器解决重复绑定后，早打开限制
-						if (c != 'event') {
-							pathkey = id + bpathsign + realkey;
-							for (var i = 0, l = links.length; i < l; i++) {
-								// console.log(id+bpathsign+links[i],pathkey);
-								addlink(id + bpathsign + links[i], pathkey);
-							}
+						// v1.2 添加links，这里过滤掉了event，防止事件重复绑定，等event控制器解决重复绑定后，则打开限制
+						// 2013-12-6 event中已经初步判断，可以尝试打开
+						// if (c != 'event') {
+						pathkey = id + bpathsign + realkey;
+						for (var i = 0, l = links.length; i < l; i++) {
+							// console.log(id+bpathsign+links[i],pathkey);
+							addlink(id + bpathsign + links[i], pathkey);
 						}
+						// }
 						// console.log(id, path, key, realkey);
 						// value要在monitorVM处理之后在赋值，因为monitorVM可能会改变数据结构（用户自定义get，set）
 						value = getDataByPath(path + bpathsign + realkey, true);
@@ -439,7 +444,9 @@
 						_vm = _vm[path];
 						_json = _json[path];
 						// 增加一步纠错，因为后期覆盖绑定的数据中不见得所有的值都有
-						if (_json == undefined) {break;}
+						if (_json == undefined) {
+							break;
+						}
 					}
 					// 判断数据是否变了
 					if ((_key in _json) && (_vm[_key] != _json[_key])) {
@@ -454,12 +461,12 @@
 				// 标记bb专用id到源对象上，备用
 				json[vmscope] = id;
 				// 更新原来的json对象将作为observer监控对象,
-				vm = vms[id] = json;
+				vms[id] = json;
+				vm = json;
 				// 扫描绑定
 				scan(id);
 			}
 			return vm;
-
 		},
 		/**
 		 * 扩展或者重写控制器

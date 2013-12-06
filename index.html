@@ -132,6 +132,12 @@
 			</li>
 		</ul>
 	</div>
+
+	<h4>demo10：event控制器也支持值变化更换绑定函数</h4>
+	<div id="demo10" class="demo">
+		<input type="button" bb-bind="value:btnclick|event:click=fn">
+		<input type="button" bb-bind="value:btnchange|event:click=btnfn">
+	</div>
 	<script>
 		// 开启实时监控
 		babe.listenintime(true);
@@ -215,6 +221,21 @@
 			}
 		};
 		babe.bind('demo9',data9);
+
+		// demo10
+		var vm10 = babe.bind('demo10',{
+			btnchange : '更换前面那货的绑定函数',
+			btnfn:function(){
+				vm10.fn = vm10.fn1;
+			},
+			btnclick:'click',
+			fn : function(){
+				alert('我还没被替换掉！')
+			},
+			fn1 : function(){
+				alert('我是替换后的函数！');
+			}
+		})
 	</script>
 </body>
 </html>
