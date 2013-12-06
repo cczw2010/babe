@@ -4,7 +4,7 @@
 	babe.addController('list', {
 		uichange: function(dom) {
 			// 需要操作吗？
-			// logs(dom);
+			// console.log(dom);
 		},
 		datachange: function(d, k, value) {
 			// 保存模板,并第一次绘制

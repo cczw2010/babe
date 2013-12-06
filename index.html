@@ -19,6 +19,9 @@
 			margin: 0;padding: 0;
 			list-style: none;
 		}
+		.red{
+			color: red;
+		}
 		.demo{
 			padding:5px;
 			border: 1px solid #ccc;
@@ -31,24 +34,32 @@
 	</style>
 </head>
 <body>
-	<h3>说明</h3>
-	<div class="readme">
-		<p>
-			babe库是一个简单的面向html5的vm（mvvm）库，实现ui和data的绑定并双工监控,同步变化。实现操作数据即操作ui，操作ui即操作数据的目的。使数据操作和ui操作代码层的分离。目前版本v1.1实现了简单的多级数据双工监控，当然，请尽量的控制数据深度。
-		</p>		
-		<p>
-			babe库只对外提供两个绑定器:<br>
-			<span class="red">bb-bind</span>是绑定控制器的,目前原生只实现了，text,value,html,attr,event,list三个简单的控制器，值得注意的是本系统对外提供自定义绑定器接口。如果你有兴趣，请关注原码中基本绑定器的实现,尽情的去实现自己的控制器吧。<br>
-			<span class="red">bb-with</span>是声明对象作用域的，主要用户多级数据绑定。<br>
-			<span class="red">bb-link</span>关联对象绑定期。<br>
-			下面看demo
-		</p>
-	</div>
+	<p>
+		<h4>说明：</h4>
+		babe库是一个精简的面向html5的vm（mvvm）库，实现ui和data的绑定并双工监控,同步变化。实现操作数据即操作ui，操作ui即操作数据的目的。使数据操作和ui操作代码层的分离。目前版本v1.1实现了简单的多级数据双工监控，当然，请尽量的控制数据深度。<br><br>
+		当前网络上的类似库有：knockout,ember,angular,avalon。个个比babe强大。但是强大带来的后果就是庞大和复杂，avalon相对简单些。这些库都不是纯面向html5移动端的，所以不可避免的做了兼容。而babe库不同，他生来就是为了移动互联网开发的，所以轻量是主题，精简是结果。或许实现不是那么全面，但是胜在灵活定制。<br><br>
+		值得注意的是本系统对外提供自定义控制器接口。如果你有兴趣，请关注原码中几个基本控制器（list,event,text,html,value,attr）的实现,都是以插件的形式实现的，所以如果你想，就可以实现各种复杂功能的属于你自己特色的控制器。<br>
+	</p>		
+	<p>
+		<h4>绑定器：</h4>
+		自v1.1开始babe库对外提供三个绑定器:<br>
+		<span class="red">bb-bind</span>：是绑定控制器的,目前原生只实现了，text,value,html,attr,event,list三个简单的控制器.awen后期会丰富起来，大家也可以开发，定制。<br>
+		<span class="red">bb-with</span>：是声明对象作用域的，主要用户多级数据绑定。<br>
+		<span class="red">bb-link</span>：关联对象绑定期。<br>
+	</p>
+	<p>
+		<h4>注意：</h4>
+			1：本库目前不支持自定义list控制器内部的数据绑定，也就是说你在list的模板内部使用<span class="red">bb-bind</span>是无效的<br>
+			2：由于本库使用defineProperty实现数据监听，所以绑定数据后，只有数据对象的属性本身被赋值才会触发关联。也就是说你要用“<span class="red">=</span>”号来修改数据才有效。诸如数组的push等方法，就是无效的。<br>
+			3：请注意，不要嵌套绑定，比如，{a:{b:1}}  如果一个对象绑定了a,另外一个对象绑定了b，那么就叫嵌套绑定，造成的后果就是刷新父数据，那么子数据的监听就丢了（详情请看上条）<br>
+			4：如果想绑定过数据后，在重新绑定数据，那么只需要重新绑定一次新数据即可，babe会自动寻找那些变了的数据进行刷新。<br>
+	</p>
 	<!-- 所有的demo都在这 -->
 	<h3>测试说明</h3>
 	<div class="tip">你可以改变页面中的值，去控制台查看数据变了没，也可以在控制台中改变值，来看ui的变化.<br>
-			友情提示：demo1对应的数据绑定区域id是"demo1",对应的数据是:"data1",依次类推
+			友情提示：demo1对应的数据绑定区域id是"demo1",对应的数据是:"data1",依次类推。
 	</div>
+	<hr>
 	<h4>demo1：基本控制器</h4>
 	<div id="demo1" class="demo">
 			<p><span bb-bind="text:title"></span><input bb-bind="value:msg"/></p>
@@ -57,7 +68,7 @@
 	<div id="demo2" class="demo">
 			<input type="button" value="点我试试" bb-bind="event:click=fn">
 	</div>
-	<h4>demo3：list控制器</h4>
+	<h4>demo3：list控制器，值得注意的是list中的模板不能再使用绑定器绑定，除非list中自己实现，后期list会重构</h4>
 	<div id="demo3" class="demo">
 			<p>
 				喜欢的颜色:
@@ -155,14 +166,14 @@
 				set:function(v){
 					// 可以在这里解析当前的值，并分别设置给相应的数据，比如：
 					var params = v.match(/：(.*),今年(.*)岁了/);
-					if (params) {
-						if (params[1]) {
-							data7.info.name=params[1];
-						}
-						if (params[2]) {
-							data7.info.age=params[2];
-						}
-					}
+					// if (params) {
+					// 	if (params[1]) {
+					// 		data7.info.name=params[1];
+					// 	}
+					// 	if (params[2]) {
+					// 		data7.info.age=params[2];
+					// 	}
+					// }
 				},
 				get:function(){
 					return '你好，我的baby叫：{{this.info.name}},今年{{this.info.age}}岁了';
@@ -204,8 +215,6 @@
 			}
 		};
 		babe.bind('demo9',data9);
-
-
 	</script>
 </body>
 </html>
