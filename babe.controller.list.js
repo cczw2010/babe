@@ -1,5 +1,5 @@
 // 注册新的控制器  list
-!function(babe){
+! function(babe) {
 	var tpls = [];
 	babe.addController('list', {
 		uichange: function(dom) {
@@ -7,18 +7,20 @@
 			// console.log(dom);
 		},
 		datachange: function(d, k, value) {
-			// 保存模板,并第一次绘制
+			// console.log('list>>>>>>>>',this);
 			var idx = 0,
+				id = d.id,
 				tpl = '';
+			// 保存模板,并第一次绘制
 			if (!d.hasAttribute('bb-list')) {
 				idx = tpls.length;
 				tpl = d.innerHTML.replace(/[\r\t\n]/g, " ").replace(/'/g, "\'")
 					.replace(/"/g, "\"")
 					.replace(/\{\{/g, "\'+(")
 					.replace(/\}\}/g, ")+\'");
-
 				tpls[idx] = tpl;
 				d.setAttribute('bb-list', idx);
+				!d.id && (id = d.id = 'bblist_' + idx);
 			} else {
 				idx = d.getAttribute('bb-list');
 				tpl = tpls[idx];
@@ -31,7 +33,8 @@
 				var h = $$(k, value[k]);
 				html.push($$(k, value[k]));
 			}
-			// logs(html.join(''));
+			//v1.2 等待babe提供接口,绑定单个dom
+			// babe.bind(id,babe.getVmData(this));
 			d.innerHTML = html.join('');
 		}
 	});
