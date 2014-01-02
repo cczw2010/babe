@@ -1,241 +1,321 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	<meta name="Author" contect="awen"/ >
-	<script src="babe.js"></script>
-	<script src="babe.controller.comm.js"></script>
-	<script src="babe.controller.list.js"></script>
-	<script src="babe.controller.event.js"></script>
-	<title>babe test</title>
-	<style>
-		body{
-			font-size: 14px;
-			line-height: 160%;
-			padding-bottom: 100px;
-		}
-		ul,li{
-			margin: 0;padding: 0;
-			list-style: none;
-		}
-		.red{
-			color: red;
-		}
-		.demo{
-			padding:5px;
-			border: 1px solid #ccc;
-		}
-		.cbtn{
-			border:1px solid #ccc;
-			background-color: #f30;
-			color: #eee;
-		}
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="Author" contect="awen" />
+    <script>
+    window.onerror = function(msg) {
+        alert(msg);
+    };
+    </script>
+    <script src="babe.js"></script>
+    <script src="babe.controller.comm.js"></script>
+    <script src="babe.controller.list.js"></script>
+    <script src="babe.controller.event.js"></script>
+    <title>babe test</title>
+    <style>
+    body {
+        font-size: 14px;
+        line-height: 160%;
+        padding-bottom: 100px;
+    }
+    ul, li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .red {
+        color: red;
+    }
+    .demo {
+        padding:5px;
+        border: 1px solid #ccc;
+    }
+    .cbtn {
+        border:1px solid #ccc;
+        background-color: #f30;
+        color: #eee;
+    }
+    </style>
 </head>
+
 <body>
-	<p>
-		<h4>说明：</h4>
-		babe库是一个精简的面向html5的vm（mvvm）库，实现ui和data的绑定并双工监控,同步变化。实现操作数据即操作ui，操作ui即操作数据的目的。使数据操作和ui操作代码层的分离。目前版本v1.1实现了简单的多级数据双工监控，当然，请尽量的控制数据深度。<br><br>
-		当前网络上的类似库有：knockout,ember,angular,avalon。个个比babe强大。但是强大带来的后果就是庞大和复杂，avalon相对简单些。这些库都不是纯面向html5移动端的，所以不可避免的做了兼容。而babe库不同，他生来就是为了移动互联网开发的，所以轻量是主题，精简是结果。或许实现不是那么全面，但是胜在灵活定制。<br><br>
-		值得注意的是本系统对外提供自定义控制器接口。如果你有兴趣，请关注原码中几个基本控制器（list,event,text,html,value,attr）的实现,都是以插件的形式实现的，所以如果你想，就可以实现各种复杂功能的属于你自己特色的控制器。<br>
-	</p>		
-	<p>
-		<h4>绑定器：</h4>
-		自v1.1开始babe库对外提供三个绑定器:<br>
-		<span class="red">bb-bind</span>：是绑定控制器的,目前原生只实现了，text,value,html,attr,event,list三个简单的控制器.awen后期会丰富起来，大家也可以开发，定制。<br>
-		<span class="red">bb-with</span>：是声明对象作用域的，主要用户多级数据绑定。<br>
-		<span class="red">bb-link</span>：关联对象绑定期。<br>
-	</p>
-	<p>
-		<h4>注意：</h4>
-			1：本库目前不支持自定义list控制器内部的数据绑定，也就是说你在list的模板内部使用<span class="red">bb-bind</span>是无效的<br>
-			2：由于本库使用defineProperty实现数据监听，所以绑定数据后，只有数据对象的属性本身被赋值才会触发关联。也就是说你要用“<span class="red">=</span>”号来修改数据才有效。诸如数组的push等方法，就是无效的。<br>
-			3：请注意，不要嵌套绑定，比如，{a:{b:1}}  如果一个对象绑定了a,另外一个对象绑定了b，那么就叫嵌套绑定，造成的后果就是刷新父数据，那么子数据的监听就丢了（详情请看上条）<br>
-			4：如果想绑定过数据后，在重新绑定数据，那么只需要重新绑定一次新数据即可，babe会自动寻找那些变了的数据进行刷新。<br>
-	</p>
-	<!-- 所有的demo都在这 -->
-	<h3>测试说明</h3>
-	<div class="tip">你可以改变页面中的值，去控制台查看数据变了没，也可以在控制台中改变值，来看ui的变化.<br>
-			友情提示：demo1对应的数据绑定区域id是"demo1",对应的数据是:"data1",依次类推。
-	</div>
-	<hr>
-	<h4>demo1：基本控制器</h4>
-	<div id="demo1" class="demo">
-			<p><span bb-bind="text:title"></span><input bb-bind="value:msg"/></p>
-	</div>
-	<h4>demo2：event控制器</h4>
-	<div id="demo2" class="demo">
-			<input type="button" value="点我试试" bb-bind="event:click=fn">
-	</div>
-	<h4>demo3：list控制器，值得注意的是list中的模板不能再使用绑定器绑定，除非list中自己实现，后期list会重构</h4>
-	<div id="demo3" class="demo">
-			<p>
-				喜欢的颜色:
-				<select name="" bb-bind="list:colors">
-					<option value="{{$index}}">{{$value}}</option>
-				</select>
-				技能:
-				<select name="" bb-bind="list:skills">
-					<option value="{{$value}}">{{$index}}</option>
-				</select>
- 			</p>
-	</div>
-	<h4>demo4：一个数据被多个dom绑定</h4>
-	<div id="demo4" class="demo">
-			<p>
-				<input type="text" bb-bind="value:title">
-				<div  bb-bind="text:title"></div>
- 			</p>
-	</div>
-	<h4>demo5：一个dom同时绑定多个控制器</h4>
-	<div id="demo5" class="demo">
-			<p><input type="text" bb-bind="attr:class=cbtn|value:val|event:change=fn"></p>
-	</div>
-	<h4>demo6：bb-with使用</h4>
-	<div id="demo6" class="demo">
-			<div bb-with="info">
-					<div>姓名:<span bb-bind="text:name"></span></div>
-					<div>年龄:
-						<select name="" bb-bind="list:ages|event:change=sel">
-							<option value="{{$index}}">{{$value}}</option>
-						</select>
-					</div>
-			</div>
-	</div>
-	<h4>demo7：自定义get和set,拼装数据</h4>
-	<div id="demo7" class="demo">
-		<ul>
-			<li bb-with="info">姓名：<input bb-bind="value:name"/></li>
-			<li bb-with="info">年龄：<input bb-bind="value:age"/></li>
-			<li>消息：<input bb-bind="value:msg" size=50/></li>
-		</ul>
-	</div>
+    <p>
+        <h4>说明：</h4>
+        babe库是一个精简的面向html5的vm（mvvm）库，实现ui和data的绑定并双工监控,同步变化。实现操作数据即操作ui，操作ui即操作数据的目的。使数据操作和ui操作代码层的分离。目前版本v1.1实现了简单的多级数据双工监控，当然，请尽量的控制数据深度。
+        <br>
+        <br>当前网络上的类似库有：knockout,ember,angular,avalon。个个比babe强大。但是强大带来的后果就是庞大和复杂，avalon相对简单些。这些库都不是纯面向html5移动端的，所以不可避免的做了兼容。而babe库不同，他生来就是为了移动互联网开发的，所以轻量是主题，精简是结果。或许实现不是那么全面，但是胜在灵活定制。
+        <br>
+        <br>值得注意的是本系统对外提供自定义控制器接口。如果你有兴趣，请关注原码中几个基本控制器（list,event,text,html,value,attr）的实现,都是以插件的形式实现的，所以如果你想，就可以实现各种复杂功能的属于你自己特色的控制器。
+        <br>
+    </p>
+    <p>
+        <h4>绑定器：</h4>
+        自v1.1开始babe库对外提供三个绑定器:
+        <br>
+        <span class="red">bb-bind</span>：是绑定控制器的,目前原生只实现了，text,value,html,attr,event,list三个简单的控制器.awen后期会丰富起来，大家也可以开发，定制。
+        <br>
+        <span class="red">bb-with</span>：是声明对象作用域的，主要用户多级数据绑定。
+        <br>
+        <span class="red">bb-link</span>：关联对象绑定期。
+        <br>
+    </p>
+    <p>
+        <h4>注意：</h4>
+        1：本库目前不支持自定义list控制器内部的数据绑定，也就是说你在list的模板内部使用
+        <span class="red">bb-bind</span>是无效的
+        <br>2：由于本库使用defineProperty实现数据监听，所以绑定数据后，只有数据对象的属性本身被赋值才会触发关联。也就是说你要用“
+        <span class="red">=</span>”号来修改数据才有效。诸如数组的push等方法，就是无效的。
+        <br>3：请注意，不要嵌套绑定，比如，{a:{b:1}} 如果一个对象绑定了a,另外一个对象绑定了b，那么就叫嵌套绑定，造成的后果就是刷新父数据，那么子数据的监听就丢了（详情请看上条）
+        <br>4：如果想绑定过数据后，在重新绑定数据，那么只需要重新绑定一次新数据即可，babe会自动寻找那些变了的数据进行刷新。
+        <br>
+    </p>
+    <!-- 所有的demo都在这 -->
+    <h3>测试说明</h3>
+    <div class="tip">你可以改变页面中的值，去控制台查看数据变了没，也可以在控制台中改变值，来看ui的变化.
+        <br>友情提示：demo1对应的数据绑定区域id是"demo1",对应的数据是:"data1",依次类推。
+    </div>
+    <hr>
+    <h4>demo1：基本控制器</h4>
+    <div id="demo1" class="demo">
+        <p>
+            <span bb-bind="text:title"></span>
+            <input bb-bind="value:msg" />
+        </p>
+    </div>
+    <h4>demo2：event控制器</h4>
+    <div id="demo2" class="demo">
+        <input type="button" value="点我试试" bb-bind="event:click=fn">
+    </div>
+    <h4>demo3：list控制器，值得注意的是list中的模板不能再使用绑定器绑定，除非list中自己实现，后期list会重构</h4>
+    <div id="demo3" class="demo">
+        <p>
+            喜欢的颜色:
+            <select name="" bb-bind="list:colors">
+                <option value="{{$index}}">{{$value}}</option>
+            </select>
+            技能:
+            <select name="" bb-bind="list:skills">
+                <option value="{{$value}}">{{$index}}</option>
+            </select>
+        </p>
+    </div>
+    <h4>demo4：一个数据被多个dom绑定</h4>
+    <div id="demo4" class="demo">
+        <p>
+            <input type="text" bb-bind="value:title">
+            <div bb-bind="text:title"></div>
+        </p>
+    </div>
+    <h4>demo5：一个dom同时绑定多个控制器</h4>
+    <div id="demo5" class="demo">
+        <p>
+            <input type="text" bb-bind="attr:class=cbtn|value:val|event:change=fn">
+        </p>
+    </div>
+    <h4>demo6：bb-with使用</h4>
+    <div id="demo6" class="demo">
+        <div bb-with="info">
+            <div>姓名:
+                <span bb-bind="text:name"></span>
+            </div>
+            <div>年龄:
+                <select name="" bb-bind="list:ages|event:change=sel">
+                    <option value="{{$index}}">{{$value}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <h4>demo7：自定义get和set,拼装数据</h4>
+    <div id="demo7" class="demo">
+        <ul>
+            <li bb-with="info">姓名：
+                <input bb-bind="value:name" />
+            </li>
+            <li bb-with="info">年龄：
+                <input bb-bind="value:age" />
+            </li>
+            <li>消息：
+                <input bb-bind="value:msg" size=50/>
+            </li>
+        </ul>
+    </div>
 
-	<h4>demo8：form验证</h4>
-	<div id="demo8" class="demo">
-		<div>姓名:<span bb-bind="text:name"></span></div>
-		<div>年龄:<input bb-bind="value:age|event:keyup=check" /><span bb-bind="text:tips"></span></div>
-	</div>
-	<h4>demo9：bb-link关联绑定使用</h4>
-	<div id="demo9" class="demo">
-		<ul>
-			<li>型号：
-				<span bb-bind="list:xinghao|event:click=selchange(xinghao)">
-					<input name="xinhao" type="radio" value="{{$index}}"><span>{{$value}}</span>
-				</span>
-			</li>
-			<li>颜色：
-				<span bb-link="selxinghao" bb-bind="list:selyanse">
-					<input name="yanse" type="radio" value="{{$index}}"><span>{{$value}}</span>
-				</span>
-			</li>
-		</ul>
-	</div>
+    <h4>demo8：form验证</h4>
+    <div id="demo8" class="demo">
+        <div>姓名:
+            <span bb-bind="text:name"></span>
+        </div>
+        <div>年龄:
+            <input bb-bind="value:age|event:keyup=check" />
+            <span bb-bind="text:tips"></span>
+        </div>
+    </div>
+    <h4>demo9：bb-link关联绑定使用</h4>
+    <div id="demo9" class="demo">
+        <ul>
+            <li>型号：
+                <span bb-bind="list:xinghao|event:click=selchange(xinghao)">
+                    <input name="xinhao" type="radio" value="{{$index}}">
+                    <span>{{$value}}</span>
+                </span>
+            </li>
+            <li>颜色：
+                <span bb-link="selxinghao" bb-bind="list:selyanse">
+                    <input name="yanse" type="radio" value="{{$index}}">
+                    <span>{{$value}}</span>
+                </span>
+            </li>
+        </ul>
+    </div>
 
-	<h4>demo10：event控制器也支持值变化更换绑定函数</h4>
-	<div id="demo10" class="demo">
-		<input type="button" bb-bind="value:btnclick|event:click=fn">
-		<input type="button" bb-bind="value:btnchange|event:click=btnfn">
-	</div>
-	<script>
-		// 开启实时监控
-		babe.listenintime(true);
-		// demo1
-		var data1 = {title:'say：',msg:'hello babe'};
-		babe.bind('demo1',data1);
-		// demo1
-		var data2 = {fn:function(e){
-			alert("do not touch me!");
-		}};
-		babe.bind('demo2',data2);
-		// demo3
-		var data3 = {colors:['red','blue','pink'],skills:{'english':'low','js':'high','html5':'high'}};
-		babe.bind('demo3',data3);
-		// demo4
-		var data4 = {title:'改变数据看看'};
-		babe.bind('demo4',data4);
-		// demo5
-		var data5 = {val:'内容变化，引起alert',cbtn:'cbtn',fn:function(e){
-			alert('内容变了：'+data5.val);
-		}};
-		babe.bind('demo5',data5);
-		// demo6
-		var data6 = {code:0,info:{name:'awen',ages:['<10','10~20','20~30','30~40','40以上'],sel:function(){
-			alert('你确认吗？');
-		}}};
-		babe.bind('demo6',data6);
-		// demo7
-		var data7 = {
-			info:{name :'张羽昕',age:1},
-			msg:{
-				set:function(v){
-					// 可以在这里解析当前的值，并分别设置给相应的数据，比如：
-					var params = v.match(/：(.*),今年(.*)岁了/);
-					// if (params) {
-					// 	if (params[1]) {
-					// 		data7.info.name=params[1];
-					// 	}
-					// 	if (params[2]) {
-					// 		data7.info.age=params[2];
-					// 	}
-					// }
-				},
-				get:function(){
-					return '你好，我的baby叫：{{this.info.name}},今年{{this.info.age}}岁了';
-				}
-			}
-		};
-		babe.bind('demo7',data7);
-		// demo8
-		var data8 = {name:'awen',age:18,tips:'*只能输入数字',check:function(e){
-			if (/^\d+$/.test(data8.age)) {
-				data8.tips = '√输入正确';
-			}else{
-				data8.tips = 'x请输入正确的数字';
-			}
-		}};
-		babe.bind('demo8',data8);
-		// demo9
-		var data9 = {
-			xinghao:['大','中','小'],
-			yanse:[{'red':'红','blue':'蓝','dark':'黑'},
-						 {'pink':'粉','white':'白','blue':'蓝'},
-						 {'blue':'蓝','pink':'粉'}
-						 ],
-			selxinghao:0,
-			selyanse: {
-				get :function(){
-					return data9.yanse[data9.selxinghao]
-				}
-			},
-			selchange:function(e,k){
-				var dom = e.target;
-				switch(k){
-					case 'xinghao':
-						if (dom.checked) {
-							data9.selxinghao=parseInt(dom.value);
-						};
-					break;
-				}
-			}
-		};
-		babe.bind('demo9',data9);
+    <h4>demo10：event控制器也支持值变化更换绑定函数</h4>
+    <div id="demo10" class="demo">
+        <input type="button" bb-bind="value:btnclick|event:click=fn">
+        <input type="button" bb-bind="value:btnchange|event:click=btnfn">
+    </div>
+    <script>
+    // 开启实时监控
+    babe.listenintime(true);
+    // demo1
+    var data1 = {
+        title: 'say：',
+        msg: 'hello babe'
+    };
+    babe.bind('demo1', data1);
+    // demo1
+    var data2 = {
+        fn: function(e) {
+            alert("do not touch me!");
+        }
+    };
+    babe.bind('demo2', data2);
+    // demo3
+    var data3 = {
+        colors: ['red', 'blue', 'pink'],
+        skills: {
+            'english': 'low',
+            'js': 'high',
+            'html5': 'high'
+        }
+    };
+    babe.bind('demo3', data3);
+    // demo4
+    var data4 = {
+        title: '改变数据看看'
+    };
+    babe.bind('demo4', data4);
+    // demo5
+    var data5 = {
+        val: '内容变化，引起alert',
+        cbtn: 'cbtn',
+        fn: function(e) {
+            alert('内容变了：' + data5.val);
+        }
+    };
+    babe.bind('demo5', data5);
+    // demo6
+    var data6 = {
+        code: 0,
+        info: {
+            name: 'awen',
+            ages: ['<10', '10~20', '20~30', '30~40', '40以上'],
+            sel: function() {
+                alert('你确认吗？');
+            }
+        }
+    };
+    babe.bind('demo6', data6);
+    // demo7
+    var data7 = {
+        info: {
+            name: '张羽昕',
+            age: 1
+        },
+        msg: {
+            set: function(v) {
+                // 可以在这里解析当前的值，并分别设置给相应的数据，比如：
+                var params = v.match(/：(.*),今年(.*)岁了/);
+                // if (params) {
+                // 	if (params[1]) {
+                // 		data7.info.name=params[1];
+                // 	}
+                // 	if (params[2]) {
+                // 		data7.info.age=params[2];
+                // 	}
+                // }
+            },
+            get: function() {
+                return '你好，我的baby叫：{{this.info.name}},今年{{this.info.age}}岁了';
+            }
+        }
+    };
+    babe.bind('demo7', data7);
+    // demo8
+    var data8 = {
+        name: 'awen',
+        age: 18,
+        tips: '*只能输入数字',
+        check: function(e) {
+            if (/^\d+$/.test(data8.age)) {
+                data8.tips = '√输入正确';
+            } else {
+                data8.tips = 'x请输入正确的数字';
+            }
+        }
+    };
+    babe.bind('demo8', data8);
+    // demo9
+    var data9 = {
+        xinghao: ['大', '中', '小'],
+        yanse: [{
+            'red': '红',
+            'blue': '蓝',
+            'dark': '黑'
+        }, {
+            'pink': '粉',
+            'white': '白',
+            'blue': '蓝'
+        }, {
+            'blue': '蓝',
+            'pink': '粉'
+        }],
+        selxinghao: 0,
+        selyanse: {
+            get: function() {
+                return data9.yanse[data9.selxinghao]
+            }
+        },
+        selchange: function(e, k) {
+            var dom = e.target;
+            switch (k) {
+                case 'xinghao':
+                    if (dom.checked) {
+                        data9.selxinghao = parseInt(dom.value);
+                    };
+                    break;
+            }
+        }
+    };
+    babe.bind('demo9', data9);
 
-		// demo10
-		var vm10 = babe.bind('demo10',{
-			btnchange : '更换前面那货的绑定函数',
-			btnfn:function(){
-				vm10.fn = vm10.fn1;
-			},
-			btnclick:'click',
-			fn : function(){
-				alert('我还没被替换掉！')
-			},
-			fn1 : function(){
-				alert('我是替换后的函数！');
-			}
-		})
-	</script>
+    // demo10
+    var vm10 = babe.bind('demo10', {
+        btnchange: '更换前面那货的绑定函数',
+        btnfn: function() {
+            vm10.fn = vm10.fn1;
+        },
+        btnclick: 'click',
+        fn: function() {
+            alert('我还没被替换掉！')
+        },
+        fn1: function() {
+            alert('我是替换后的函数！');
+        }
+    })
+    </script>
 </body>
+
 </html>
