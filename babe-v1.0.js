@@ -187,7 +187,7 @@
 					var tpl, lkeys, linkvals = [];
 					if (!(key in linksTpl)) {
 						// 保存模板
-						tpl = val['get']();
+						tpl = val.get();
 						// 正反存两份
 						lkeys = tpl.match(/\w+(?=\}\})/g); //获取所有的关联键数组
 						for (var i = 0, l = lkeys.length; i < l; i++) {
@@ -212,7 +212,7 @@
 					} else {
 						lkeys = linkkeys[key] || [];
 					}
-					for (var i = 0, l = lkeys.length; i < l; i++) {
+					for (i = 0, l = lkeys.length; i < l; i++) {
 						linkvals.push(data[lkeys[i]]); //这里应该用vm还是data？？？
 					}
 					// console.log(lkeys,linksTpl[key],linkvals);
@@ -223,7 +223,7 @@
 					return data[key];
 				};
 			}
-			var usersetfn = isobj && ('set' in val) ? val['set'] : null;
+			var usersetfn = isobj && ('set' in val) ? val.set : null;
 			setter = function(v) {
 				var oldv = data[key];
 				// logs(oldv, v);
@@ -363,6 +363,6 @@
 		},
 		// 获取当前的dom的所在解析作用域id，用于扩展控制器，一个dom作为参数
 		getScope: getScope,
-		getPathByDom: getPathByDom,
+		getPathByDom: getPathByDom
 	};
 }(this);

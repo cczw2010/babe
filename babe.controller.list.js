@@ -1,5 +1,5 @@
 // 注册新的控制器  list
-! function(babe) {
+!function(babe){
 	var tpls = [];
 	babe.addController('list', {
 		uichange: function(dom) {
@@ -7,20 +7,18 @@
 			// console.log(dom);
 		},
 		datachange: function(d, k, value) {
-			// console.log('list>>>>>>>>',this);
-			var idx = 0,
-				id = d.id,
-				tpl = '';
 			// 保存模板,并第一次绘制
+			var idx = 0,
+				tpl = '';
 			if (!d.hasAttribute('bb-list')) {
 				idx = tpls.length;
 				tpl = d.innerHTML.replace(/[\r\t\n]/g, " ").replace(/'/g, "\'")
 					.replace(/"/g, "\"")
 					.replace(/\{\{/g, "\'+(")
 					.replace(/\}\}/g, ")+\'");
+
 				tpls[idx] = tpl;
 				d.setAttribute('bb-list', idx);
-				!d.id && (id = d.id = 'bblist_' + idx);
 			} else {
 				idx = d.getAttribute('bb-list');
 				tpl = tpls[idx];
@@ -28,13 +26,12 @@
 			var html = [],
 				$$ = new Function('$index', '$value', 'return \'' + tpl + '\';'),
 				isarray = Object.prototype.toString.call(value) == '[object Array]';
-			for (var k in value) {
-				k = isarray ? parseInt(k) : k;
-				var h = $$(k, value[k]);
-				html.push($$(k, value[k]));
+			for (var _k in value) {
+				_k = isarray ? parseInt(_k) : _k;
+				var h = $$(_k, value[_k]);
+				html.push($$(_k, value[_k]));
 			}
-			//v1.2 等待babe提供接口,绑定单个dom
-			// babe.bind(id,babe.getVmData(this));
+			// logs(html.join(''));
 			d.innerHTML = html.join('');
 		}
 	});

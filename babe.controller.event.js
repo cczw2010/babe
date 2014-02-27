@@ -28,7 +28,7 @@
 		resolve:function(c){
 			var _c = splitc(c);
 			if (_c) {
-				return _c['k'];
+				return _c.k;
 			}
 			return false;
 		},
@@ -50,8 +50,8 @@
 			}
 			stack = stacks[_id];
 			_c = splitc(c);
-			et = _c['et'];
-			param = _c['param'];
+			et = _c.et;
+			param = _c.param;
 			//如果该控制器曾绑定过，先注销
 			if (c in stack) {
 				dom.removeEventListener(et, stack[c], false);

@@ -234,7 +234,7 @@
 				getter = function() {
 					// return val['get'].call(obj);
 					var lkeys, trueval, linkvals = {},
-						tpl = val['get']();
+						tpl = val.get();
 					// 保存模板
 					// v1.1将模板中的this更换为实际的scopeid，并且只保存反向关联。正向关联应该由用户实现
 					if (!tpl) {
@@ -256,11 +256,11 @@
 						} else {
 							lkeys = linkkeys[pathkey] || [];
 						}
-						for (var i = 0, l = lkeys.length; i < l; i++) {
-							var lkey = lkeys[i];
-							lval = getDataByPath(lkey);
+						for (i = 0, l = lkeys.length; i < l; i++) {
+							var _lkey = lkeys[i];
+							lval = getDataByPath(_lkey);
 							// console.log(lkey,lval);
-							linkvals[lkey] = lval;
+							linkvals[_lkey] = lval;
 						}
 						// 替换数据
 						trueval = linksTpl[pathkey].replace(/\{\{([^\}\{]+)\}\}/g, function($1, $2) {
@@ -275,7 +275,7 @@
 					return obj[key];
 				};
 			}
-			var usersetfn = isobj && ('set' in val) ? val['set'] : null;
+			var usersetfn = isobj && ('set' in val) ? val.set : null;
 			setter = function(v) {
 				var oldv = obj[key];
 				if (oldv != v) {
@@ -289,8 +289,8 @@
 						var lkeys = linkkeys[pathkey];
 						for (var i = 0, l = lkeys.length; i < l; i++) {
 							var lpath = lkeys[i],
-								lpaths = splitPath(lpath);
-							lkey = lpaths.pop(),
+								lpaths = splitPath(lpath),
+								lkey = lpaths.pop();
 							lpath = lpaths.join(bpathsign);
 							// console.log("links~~~~~~~~~~~~~",lpath,lkey,lval);
 							smessage(lpath, lkey, 'datachange');
@@ -330,9 +330,8 @@
 						path = getPathByDom(dom);
 					// console.log('<<<<<<<<解析控制器：', path + bpathsign + cs[c]);
 					//有的uichange并不返回数据，而只是一些处理，比如select
-					//val 也可能是空或者0的
-					if (typeof val != 'undefined') {
-						smessage(path, cs[c], 'domchange', val); 
+					if (val) {
+						smessage(path, cs[c], 'domchange', val); //??????????????????????????????????????????????????????要改
 					}
 				} else {
 					console.log(c + '>>>>%c控制器注册方法错误，没有遵循{uichange：fn,datachange:fn}格式', 'color:red');
@@ -388,8 +387,9 @@
 						control = controls[c];
 					if (control) {
 						// v1.1 获取实际的key
-						var realkey = control.resolve ? control.resolve(key) : key,
+						var realkey = control.resolve ? control.resolve(key) : '',
 							pathkey;
+						realkey = realkey ? realkey : key;
 						//监控相应对象
 						monitorVM(id, path, realkey);
 
@@ -444,7 +444,7 @@
 						_vm = _vm[path];
 						_json = _json[path];
 						// 增加一步纠错，因为后期覆盖绑定的数据中不见得所有的值都有
-						if (_json == undefined) {
+						if (_json === undefined) {
 							break;
 						}
 					}
@@ -483,10 +483,6 @@
 		// 获取dom上绑定的数据的path
 		getPathByDom: getPathByDom,
 		// 根据path获取数据
-		getDataByPath: getDataByPath,
-		// 获取vm对象(首次绑定的数据对象或者babe.bind返回的)对应的实际的数据对象,该方法在控制器的实现中可能会用到
-		getVmData:function(vm){
-			return datas[vm[vmscope]];
-		}
+		getDataByPath: getDataByPath
 	};
 }(this);
